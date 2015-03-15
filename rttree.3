@@ -1,0 +1,1721 @@
+.\"     $NetBSD: Exp $
+.\"
+.\" Copyright (c) 2014 The NetBSD Foundation, Inc.
+.\" All rights reserved.
+.\"
+.\" This code is derived from software contributed to The NetBSD Foundation
+.\" by Dennis Ferguson.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+.\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+.\" TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
+.\" BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" 
+.Dd July 4, 2014
+.Dt RTTREE 3
+.Os
+.Nm rttree_add ,
+.Nm rttree_add_c ,
+.Nm rttree_change ,
+.Nm rttree_change_c ,
+.Nm rttree_color ,
+.Nm rttree_delete ,
+.Nm rttree_dest_next ,
+.Nm rttree_dest_prev ,
+.Nm rttree_destroy ,
+.Nm rttree_find ,
+.Nm rttree_find_c ,
+.Nm rttree_find_cx ,
+.Nm rttree_find_x ,
+.Nm rttree_getnext ,
+.Nm rttree_getnext_c ,
+.Nm rttree_getnext_cx ,
+.Nm rttree_getnext_x ,
+.Nm rttree_getprev ,
+.Nm rttree_getprev_c ,
+.Nm rttree_getprev_cx ,
+.Nm rttree_getprev_x ,
+.Nm rttree_init ,
+.Nm rttree_is_child ,
+.Nm rttree_key_length ,
+.Nm rttree_lookup ,
+.Nm rttree_lookup_c ,
+.Nm rttree_lookup_cx ,
+.Nm rttree_lookup_x ,
+.Nm rttree_next ,
+.Nm rttree_next_c ,
+.Nm rttree_next_cx ,
+.Nm rttree_next_x ,
+.Nm rttree_parent ,
+.Nm rttree_plookup ,
+.Nm rttree_plookup_c ,
+.Nm rttree_plookup_cx ,
+.Nm rttree_plookup_x ,
+.Nm rttree_prev ,
+.Nm rttree_prev_c ,
+.Nm rttree_prev_cx ,
+.Nm rttree_prev_x ,
+.Nm rttree_prune_next ,
+.Nm rttree_prune_next_c ,
+.Nm rttree_prune_next_cx ,
+.Nm rttree_prune_next_x ,
+.Nm rttree_prune_prev ,
+.Nm rttree_prune_prev_c ,
+.Nm rttree_prune_prev_cx ,
+.Nm rttree_prune_prev_x ,
+.Nm rttree_release ,
+.Nm rttree_sub_first ,
+.Nm rttree_sub_first_c ,
+.Nm rttree_sub_first_cx ,
+.Nm rttree_sub_first_x ,
+.Nm rttree_sub_last ,
+.Nm rttree_sub_last_c ,
+.Nm rttree_sub_last_cx ,
+.Nm rttree_sub_last_x ,
+.Nm rttree_sub_next ,
+.Nm rttree_sub_next_c ,
+.Nm rttree_sub_next_cx ,
+.Nm rttree_sub_next_x ,
+.Nm rttree_sub_prev ,
+.Nm rttree_sub_prev_c ,
+.Nm rttree_sub_prev_cx ,
+.Nm rttree_sub_prev_x ,
+.Nm rttree_tune
+.Sh NAME
+.Nm rttree
+.Nd operate on and maintain a concurrent best match route lookup tree
+.Sh LIBRARY
+.\" .Lb librttree
+Concurrent Route Tree Library (librttree, \-lrttree)
+.Sh SYNOPSIS
+.In rttree.h
+.Ft int
+.Fn rttree_add "rttree_t *rr" "rtnode_t *rn" "u_int k_len"
+.Ft int
+.Fn rttree_add_c "rttree_t *rr" "rtnode_t *rn" "u_int k_len" "rtt_color_t color"
+.Ft int
+.Fn rttree_change "rttree_t *rr" "rtnode_t *n_rn" "rtnode_t *o_rn"
+.Ft int
+.Fn rttree_change_c "rttree_t *rr" "rtnode_t *n_rn" "rtt_color_t color" "rtnode_t *o_rn"
+.Ft rtt_color_t
+.Fn rttree_color "rtnode_t *rn"
+.Ft int
+.Fn rttree_delete "rttree_t *rr" "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_dest_next "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_dest_prev "rttree_t *rr" "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_destroy "rttree_t *rr"
+.Ft rtnode_t *
+.Fn rttree_find "rttree_t *rr" "const uint32_t *kp" "u_int k_len"
+.Ft rtnode_t *
+.Fn rttree_find_c "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_find_cx "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_find_x "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_getnext "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match"
+.Ft rtnode_t *
+.Fn rttree_getnext_c "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_getnext_cx "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_getnext_x "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_getprev "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match"
+.Ft rtnode_t *
+.Fn rttree_getprev_c "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_getprev_cx "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_getprev_x "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "const void *thunk"
+.Ft int
+.Fn rttree_init "rttree_t *rr" "size_t p_offset" "size_t k_offset" "rtt_size_t root_lut" "rtt_colormask_t lex_cmask" "const rtt_alloc_t *mem_funcs" "const rtt_cmpfuncs_t *cmp_funcs" "rtt_stats_t *stats"
+.Ft bool
+.Fn rttree_is_child "rtnode_t *rn"
+.Ft u_int
+.Fn rttree_key_length "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_lookup "rttree_t *rr" "const uint32_t *kp"
+.Ft rtnode_t *
+.Fn rttree_lookup_c "rttree_t *rr" "const uint32_t *kp" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_lookup_cx "rttree_t *rr" "const uint32_t *kp" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_lookup_x "rttree_t *rr" "const uint32_t *kp" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_next "rttree_t *rr" "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_next_c "rttree_t *rr" "rtnode_t *rn" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_next_cx "rttree_t *rr" "rtnode_t *rn" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_next_x "rttree_t *rr" "rtnode_t *rn" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_parent "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_plookup "rttree_t *rr" "const uint32_t *kp" "u_int k_len"
+.Ft rtnode_t *
+.Fn rttree_plookup_c "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_plookup_cx "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_plookup_x "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prev "rttree_t *rr" "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_prev_c "rttree_t *rr" "rtnode_t *rn" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_prev_cx "rttree_t *rr" "rtnode_t *rn" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prev_x "rttree_t *rr" "rtnode_t *rn" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prune_next "rttree_t *rr" "rtnode_t *rn" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_prune_next_c "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_prune_next_cx "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prune_next_x "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prune_prev "rttree_t *rr" "rtnode_t *rn" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_prune_prev_c "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_prune_prev_cx "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prune_prev_x "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "const void *thunk"
+.Ft int
+.Fn rttree_release "rttree_t *rr"
+.Ft rtnode_t *
+.Fn rttree_sub_first "rttree_t *rr" "const uint32_t *kp" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_sub_first_c "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_sub_first_cx "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_first_x "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_last "rttree_t *rr" "const uint32_t *kp" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_sub_last_c "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_sub_last_cx "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_last_x "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_next "rttree_t *rr" "rtnode_t *rn" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_sub_next_c "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_sub_next_cx "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_next_x "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_prev "rttree_t *rr" "rtnode_t *rn" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_sub_prev_c "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_sub_prev_cx "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_prev_x "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "const void *thunk"
+.Ft int
+.Fn rttree_tune "rttree_t *rr" "const rtt_opt_t *opt_sched"
+.Sh DESCRIPTION
+A
+.Tn rttree
+is a data structure providing efficient support for longest\-match lookups
+of the type often used to make network protocol routing decisions.  The
+implementation is designed to support both conventional applications
+requiring the facilities the data structure provides and to allow lockless
+read access concurrent with add, delete and change operations in threaded
+programs and the kernel environment.  This page describes functions in the
+library designed for use in single\-threaded programs, or in contexts
+where it is guaranteed that no add or delete operations will be
+in progress concurrently with searches.  Functions which perform equivalent
+operations in volatile
+.Tn rttrees
+are described at
+.Xr rttree_v 3 .
+.Pp
+The search and node keys for a
+.Tn rttree
+are variable length strings of bits.  A key
+.Dq prefix
+is a contiguous
+substring of the bits in the key starting at the most significant
+bit of the key and extending to the length of the prefix.  The most
+significant bit of a key is the highest order bit in the lowest
+address byte occupied by the key; bit significance decreases with
+increasing byte address within a key and with decreasing bit order
+within a byte.  Note that while bit significance is defined in terms
+of byte address (keys are stored in
+.Dq network
+byte order) keys are
+passed into and accessed internally by
+.Tn rttree
+library functions as arrays of
+.Fa uint32_t
+data and hence must be stored in memory appropriate for the wider
+data type in both alignment and extent.
+.Pp
+The length of a node key is measured in bits.  The length may be any
+value between 0 (a
+.Dq "default route" ,
+matching all search keys) and
+65504 bits, with the latter limit deriving from the internal 16 bit
+representation of node key lengths.  Node keys in a
+.Tn rttree
+are distinguished by both the value and the length of the key; nodes
+with keys of different lengths are considered to have distinct keys
+even if they match in value to the length of the shorter and independent
+of the state of the trailing bits in the longer key.  The internal
+structure of the tree does, however, recognize the relationships
+between nodes with keys having a prefix in common, and some types
+of searches and tree walk functions make use of these.  A node is a
+.Dq parent
+node if other nodes with longer keys for which the parent's
+key is a prefix exist in the tree (a node with a zero\-length key
+is a parent to all other nodes in the tree), a
+.Dq child
+node is a
+node for which no node with a longer matching key is present and a
+.Dq subtree
+is a group of nodes of various lengths which have a prefix
+of some shorter length in common (the entire tree could be described
+as a subtree with a prefix length of zero).
+.Pp
+The
+.Tn rttree
+is an efficient structure in which to perform searches which
+take a search key and find a node whose key is the longest matching
+prefix of the search key currently in the tree.  Longest\-match
+searches may be performed with search keys which are known to be longer
+than the longest prefix in the tree or with keys of a specified,
+limited length.  Searches which find an exact matching key and
+key length are also efficient.  The search structure is highly
+scalable with the number of nodes stored; while consuming
+.Em O(N)
+memory it exhibits better than
+.Em O(log(N))
+behavior for searches (the general algorithm might be described as
+scaling with
+.Em O(log(log(N)))
+but certain constraints which are observed to ensure that the work
+required for incremental modifications is always modest may impair this)
+and has certain characteristics which can improve performance in sparsely
+populated trees as well.  When conducting searches the search key
+is compared to a node prefix no more than once in the process,
+making the structure useful for storing and indexing even long keys where
+the cost of key comparisons is significant.
+.Pp
+In addition to
+longest\-match searches the structure supports a variety of
+tree walk and lexical search functions.  The lexical ordering
+of nodes by key considers both key value and length.  Lexically
+larger keys have key values which are larger (i.e. have one-bits
+in more significant bit positions) and prefix lengths which are
+longer.  Functions with
+.Em next
+as part of their names return lexically larger keys while functions
+having
+.Em prev
+in their names return lexically smaller keys.  Tree walk functions
+which start at a node and return another operate with
+.Em O(1)
+complexity while lexical search functions scale similarly to
+longest\-match searches.
+.Pp
+The implementation additionally provides optional support for storing
+multiple nodes with the same key and key length.  It is most
+suitable when the number of nodes with the same key is likely
+to be small since nodes with the same key are sorted into a
+singly linked list.  The lexical ordering of nodes with the
+same key is established in one or both of two ways.  The application
+may provide a function when the tree is initialized to compare a
+pair of nodes, returning
+.Fa RTT_CMP_LT ,
+.Fa RTT_CMP_EQ
+or
+.Fa RTT_CMP_GT
+if the first node argument should be considered
+.Dq "less than" ,
+.Dq "equal to"
+or
+.Dq "greater than"
+the second; the list is maintained with the
+.Dq least
+node first.  The application may also make use of the node
+.Dq color ,
+a 16 bit value associated with each node which may be specified
+when the node is added to the tree and, if the tree is initialized
+with a
+.Dq "color mask"
+defining how node colors may be compared, same\-key nodes can
+instead be sorted by color without the overhead of the function
+call for comparisons.  If both mechanisms are employed the
+color comparison is performed first, with the comparison function
+being called only when the colors are
+.Dq equal .
+Note that adding a node to a
+.Tn rttree
+will fail if an
+.Dq equal
+node is already present in the tree, so if no provision is made
+to provide same\-key node comparisons only a single node with
+a particular key and key length will be permitted in the tree.
+.Pp
+Some functions which operate on a
+.Tn rttree
+ignore the presence of multiple nodes with the same key and key length,
+and return only the first (the
+.Dq "least" )
+node with a particular prefix.  As these functions are generally the
+least expensive to execute it is advantageous if the lexical ordering of
+same\-key nodes is designed such that the nodes most commonly required
+to be found are first.  For tree walk and lexical search functions which
+deal with same\-key nodes, however, the tree lexical ordering extends
+through the same\-key nodes in the order defined by the comparison
+function and/or the node color.  That is, functions with
+.Em next
+in their names will return nodes with the same key which compare
+.Fa RTT_CMP_GT ,
+before returning nodes with different, lexically larger keys, while
+functions with
+.Em prev
+in their names will return
+.Fa RTT_CMP_LT
+nodes.
+.Pp
+An instance of a
+.Tn rttree
+is identified by the root structure of type
+.Fa rttree_t ,
+defined in
+.Ao Pa rttree.h Ac .
+This structure is allocated by the user but must be initialized
+by a call to
+.Fn rttree_init
+before passing the structure as an argument to any other library
+function.  Node structures of type
+.Fa rtnode_t
+are added to and deleted from the
+.Tn rttree ,
+are returned as the result of search functions and are
+(often) both an argument and the returned value of tree
+walk functions.  Each
+.Fa rtnode_t
+structure is also allocated by the user, and is intended
+to be embedded as a member of a larger application structure whose
+indexed storage is the purpose for building the tree.  Functions
+which operate on the tree tend to come in several
+variants differing in how, or whether, they determine which nodes
+are appropriate to return based on node color and/or by calls to
+a user\-specified match function.  The most basic functions ignore
+node auxilliary data and perform their operations based solely
+on key prefix comparisons.  Alternatives which examine the node
+color have a
+.Em _c
+suffix appended to their names and take two color mask arguments
+specifying how the node color is to be interpreted for equality.
+Alternatives which instead rely on calls to a user\-specified match
+function to determine equality instead have a
+.Em _x
+suffix appended their names and take a
+.Dq thunk
+argument which is passed to the comparison function to specify
+its operation, while functions which use both node color and a
+match function have a
+.Em _cx
+suffix added to their names and take all three arguments.
+.Pp
+Beyond tree initialization the functions which operate on a
+rttree for the most part belong to one of three operational
+groups.  The tree modification functions add a node to the
+tree, delete a node from the tree or remove a node from the
+tree and add another with the same key in a single operation;
+these are
+.Fn rttree_add
+(with a node color variant),
+.Fn rttree_delete ,
+and
+.Fn rttree_change
+(with a node color variant).
+.Pp
+The tree search functions take a tree and a user\-specified
+key (and key length, often) and perform a search returning
+a node which is somehow a match for that key.  The
+.Fn rttree_lookup
+functions take a search key argument known to be as long as the longest
+node key in the tree and returns a node with a key which is the longest
+matching prefix in the tree.  The
+.Fn rttree_plookup
+functions operate similarly but take a search key argument with
+a specified length and return the node with the longest\-matching
+prefix which is no longer than the search key.  The
+.Fn rttree_find
+functions also take a search key and key length as arguments and
+return a node with an exactly matching key and key length.  The
+.Fn rttree_sub_first
+and
+.Fn rttree_sub_last
+functions take a search key and length as arguments and
+return nodes having the lexically smallest and largest
+keys, respectively, having node keys no shorter than the search key
+in the subtree of nodes sharing the search key as a prefix.
+.Pp
+The tree walk functions generally take a tree and a node in
+that tree as an argument and return another node from the tree
+having a specific lexical relationship to the argument node.  The
+.Fn rttree_next
+function returns the node in the tree with a key (and perhaps color
+or user\-specified comparison relationship) which is the
+nearest lexically larger than the argument node, while
+.Fn rttree_prev
+returns the node with the nearest lexically smaller key.  A
+.Fa NULL
+value is returned if there is no such node (i.e. the argument node is
+the lexically largest or smallest of the desired type in the tree).  The
+.Fn rttree_sub_next
+and
+.Fn rttree_sub_prev
+functions perform the same operations but restrict themselves to nodes
+which share a common prefix of the specified length with the argument
+node.  The functions
+.Fn rttree_prune_next
+and
+.Fn rttree_prune_prev
+also do the analogous operations but instead skip over any nodes
+which share a common prefix of the specified length with the argument node,
+returning a node with the appropriate lexical relationship
+with a different prefix.  Finally, the tree walk functions
+.Fn rttree_getnext
+and
+.Fn rtttree_getprev
+differ by taking key and key length arguments rather than a
+node already in the tree, and return the same node result as
+the
+.Fn rttree_next
+or
+.Fn rttree_prev
+functions would return if a node with the specified key were
+present in the tree.
+.Pp
+The
+.Fa rtnode_t 
+node structure contains the data structure overhead required
+to index the application structure in a
+.Tn rttree.  The key for each node stored in a tree may be accessed
+during tree searches, walks and modifications, and the key's location
+is specified with respect to the
+.Fa rtnode_t
+structure when the tree is initialized.  In particular, two arrangements
+are possible.  The first allows the key to be stored in the same
+structure as the node at some offset following the node, for example:
+.Bd -literal
+	struct foo {
+		...
+		rtnode_t node;
+		...
+		uint32_t key[8];
+		...
+	};
+.Ed
+.Pp
+In this case the offset to the key material is specified as a
+key offset from
+.Fa node
+and might be computed as
+.Bd -literal
+	offsetof(struct foo, key) - offsetof(struct foo, node)
+.Ed
+.Pp
+A correct key offset will hence always be no less than
+.Fa sizeof(rtnode_t)
+and will have appropriate alignment for a
+.Fa uint32_t
+datum.
+.Pp
+The second alternative requires that a pointer to the structure
+containing the key material follow the node, perhaps at some
+offset, for example:
+.Bd -literal
+	struct bar {
+		...
+		rtnode_t node;
+		...
+		struct sockaddr_in *sin;
+		...
+	};
+.Ed
+.Pp
+In this case there are two offsets of interest.  The pointer offset
+might be computed as
+.Bd -literal
+	offsetof(struct bar, sin) - offsetof(struct bar, node)
+.Ed
+.Pp
+while an additonal non-zero key offset may be provided if the start of the
+key is located at some offset from the pointed-to location, for example:
+.Bd -literal
+	offsetof(struct sockaddr_in, sin_addr)
+.Ed
+.Pp
+Clearly in this case, while the key offset may be specified arbitrarily
+while observing
+.Fa uint32_t
+alignment constraints,
+a correct pointer offset is required to be aligned appropriately
+for a pointer type and be no less than
+.Fa sizeof(rtnode_t) .
+A pointer offset of zero is hence used to signal that the key is
+in fact stored in the same structure as the node, i. e. the first
+arrangement above.  It is important
+that the key value, the key pointer, the contents of the
+.Fa rtnode_t
+node and any auxilliary data in the application structure which would
+effect the results returned by user\-specified node comparison and
+match functions not be changed while a node is in the tree; if a change
+to the node data is necessary the node should be deleted from the tree
+prior to making the change and re\-added to the tree once this has been
+accomplished (though see the details of
+.Fn rttree_change
+for an exception).
+.Pp
+It is worth observing that an application using this package is
+far more likely to be interested in adding, deleting and searching
+for the
+.Fa "struct foo"
+or
+.Fa "struct bar"
+containers than it is in the
+.Fa rtnode_t
+node member which is the object of interest to most of the functions
+described following.  A use of this package might hence find it
+convenient to encapsulate the operations required by the application
+in wrappers which replace references to the node member with references
+to the application structure it is a member of.
+.Pp
+While the
+.Fa rttree_t
+and
+.Fa rtnode_t
+structures are the primary user\-visible structures used by the
+package, several other types of structures are used internally by
+the library and may be allocated and freed by modification
+functions.  While these are not of direct interest to users of
+the library it is required that functions to implement allocating
+and freeing these structures be provided by the user at tree initialization
+time in the form of a pointer to a structure of type
+.Fa rtt_alloc_t
+with the following filled\-in procedure handle structure members:
+.Bd -literal
+        rtt_inode_t *(*rtta_inode_alloc)(rttree_t *)
+        void    (*rtta_inode_free)(rttree_t *, rtt_inode_t *)
+        void    (*rtta_inode_unref)(rttree_t *, rtt_inode_t *)
+        rtt_ptr_t *(*rtta_lut_alloc)(rttree_t *, rtt_size_t)
+        void    (*rtta_lut_free)(rttree_t *, rtt_size_t, rtt_ptr_t *)
+        void    (*rtta_lut_unref)(rttree_t *, rtt_size_t, rtt_ptr_t *)
+.Ed
+.Pp
+An
+.Dq inode
+is a structure of type
+.Fa rtt_inode_t
+and hence has an allocation size of
+.Em sizeof(rtt_inode_t) .
+One may be allocated during calls to
+.Fn rttree_add
+and freed during calls to
+.Fn rttree_delete .
+A
+.Dq "lookup table" ,
+or
+.Dq "LUT" ,
+is a variable, power\-of\-two sized array with elements of the
+type
+.Fa rtt_ptr_t
+having between 4 and 256 elements.  The
+.Fa rtt_size_t
+argument to the functions encodes the length of the array required; it
+is an integer value between 0 and 6, inclusive, with 0 corresponding to
+a 256 element array and 6 corresponding to a 4 element array.  The macro
+.Fn RTT_LUT_ENTRIES
+computes the number of elements the
+.Fa rtt_size_t
+represents, so the required allocation size for a
+.Fa rtt_size_t
+value of
+.Fa LUT
+may be computed as
+.Bd -literal
+        RTT_LUT_ENTRIES(lut) * sizeof(rtt_ptr_t)
+.Ed
+.Pp
+Note that two function handles are provided to deal with each type of
+structure as they are removed from the tree.  The distinction between
+them is that, while both functions handle structures which a modification
+has removed from the tree, the
+.Fn _free
+function is called to free structures in situations where the library
+has knowlege that no concurrent lookups are in progress which could
+still hold a reference to the data; the memory may be immediately
+returned to the free pool.  The
+.Fn _unref
+function is instead called in situations where the memory is no
+longer referenced by the tree data structure itself but may still
+be referenced by concurrently in\-progress lookups; in this case the
+function is required to hold on to the memory, unmodified, until it
+can be determined that all concurrently searches of the structure
+begun before the memory was freed have completed.  How the latter is
+accomplished (and this constraint must also be observed for nodes
+deleted from a tree as well) is beyond the scope of the library itself
+and is the fundamental general problem to be solved when providing support
+for structures which can be modified while concurrently being read.  Note
+that in non\-volatile trees, where no concurrent access is possible during
+modifications, the
+.Fn _free
+and
+.Fn _unref
+function pointers may refer to the same functions and may immediately
+free the memory.  The
+.Fa "rttree_t *"
+argument to each function refers to the
+.Tn rttree
+the memory is being allocated for or removed from and is included
+in case the context is useful for the implementation of these functions.
+.Pp
+The memory allocators must also be implemented to observe memory
+alignment constraints.  Both
+.Fa rtt_inode_t
+structures and
+.Fa "rtt_ptr_t *"
+arrays, as well as the
+.Fa rttree_t
+root structure itself, must be allocated in memory aligned such that the
+low order 3 bits of the representation of a pointer to the structure
+are zero.  This unfortunate constraint is dictated by the internal
+data representation requirements for an atomically updateable data
+structure; pointer address alignment must be what on many architectures
+would be appropriate for an 8 byte data type.  As a practical matter
+this is unlikely to be a problem on conventional architectures
+having 64 bit pointers; the first member of each of these structures
+is a pointer type which might be expected to naturally be placed
+at the appropriate pointer alignment even when embedded in some
+larger structure.  For machines with 32 bit pointers,
+which might normally have less stringent alignment constraints, some
+care has been taken to ensure that all the structures in question are
+likely to compile to a power\-of\-2 multiple of the pointer size (with
+the possible exception of the root structure, which may require
+special handling) to maximize the likelyhood that the memory allocator
+implementation will place the allocations appropriately, but in all
+cases it is up to the user of the library to do what is necessary to
+ensure the constraint is observed.  Note that the alignment constraint
+does not extend to the
+.Fa rtnode_t
+structure; for this the requirement is only that the low order bit
+of the representation of a pointer to the structure be zero, as might
+normally be the case for architectures where the library is likely to
+be useful.
+.Pp
+Finally there is the issue of memory allocation failures, which are
+signalled by the allocators in the conventional fashion of a
+.Fa NULL
+pointer return value.  Note that LUT allocations, which may
+be requested during the execution of any of the tree modification
+functions, are
+.Dq "best effort"
+allocations.  A lookup table allocation failure may leave the tree
+with less than optimal search performance but the tree will continue
+to return correct results to searches and walks and the allocation
+failure will not cause
+a modification operation to fail.  The suboptimal performance resulting from
+the allocation failure is also not permanent as it may be corrected should
+future modifications cause the same segment of the tree to be
+revisited.  On the other hand the failure of an allocation of a
+.Fa rtt_inode_t
+structure, one of which may (or may not) be allocated by an invocation
+of
+.Fn rttree_add ,
+will cause the function invocation which suffers the failure to fail,
+returning an error code and not adding the node to the tree as
+requested.  Should the reliability of memory allocations not be
+guaranteed and a failure of
+.Fn rttree_add
+for this reason be difficult to deal with, an application might
+consider preallocating a
+.Fa rtt_inode_t
+structure to satisfy each critical call to
+.Fn rttree_add
+at a point where the allocation failure is easier to deal with.
+.Pp
+The other general topic requiring some design and implementation
+care to be taken by the user is that of same\-key node comparisons
+and node matching using node color
+and/or user\-specified comparison and match functions.  Note first that
+the library function API has been designed so that the presence of
+these features has little cost if they are not useful to the particular
+application.  Initializing the tree with node comparison arrangements
+being left unspecified and using search and walk functions which omit
+these comparisons will provide a single node per key structure in which
+longest match searches and walks will find their results from among all
+nodes in the tree with minimal additional overhead.  The additional
+functionality is useful when the application has a need to store
+multiple nodes in the tree with the same key and/or when it is desired
+that some searches and walks select their returned nodes from among
+some user\-defined subset of the nodes present in the tree.
+.Pp
+The first mechanism available for node classification is the
+node
+.Dq color ,
+an immutable 16 bit unsigned value of type
+.Fa rtt_color_t
+which may be associated with each node when the node is added to the
+tree.  What the node color represents and how it is encoded into
+the 16 bits (or whether the functionality is useful at all) is an
+application design issue.  A node color is used internally by the
+library by applying a
+.Dq "color mask"
+to the color and using the result of that operation as the required
+datum.  A color mask has two 16 bit components, an
+.Dq invert
+word and a
+.Dq mask
+word; a result is found using the following computation:
+.Bd -literal
+        result = (node->color ^ invert) & mask;
+.Ed
+.Pp
+A color mask is delivered to library functions as a single 32 bit datum
+of type
+.Fa rtt_colormask_t
+which may be constructed from the component values using the macro
+.Bd -literal
+        RTT_COLORMASK(mask, invert)
+.Ed
+.Pp
+Note that a zero\-valued color mask causes the result of the mask operation
+to always be zero and is hence used when no node differentiation by color
+is desired.
+.Pp
+The node color may be used in two contexts.  The first of these is to
+define a lexical ordering for nodes with the same key.  If a non\-zero
+color mask is provided at tree initialization time then the result of
+applying that color mask to the color of nodes with the same key will
+be used as the primary mechanism defining the lexical ordering of those
+nodes; nodes with a numerically lower result will be sorted first while
+nodes with the same result will not be permitted to be added to the tree
+(unless a user node comparison function is also supplied, in which case
+it will be consulted instead to determine the inequality of equal color
+nodes).  The second use is in the context of searches and walks where it
+is desired that the operation return one of a limited subset of nodes.  Here
+two color masks are supplied: a
+.Dq skip
+mask and an
+.Dq ignore
+mask.  If the result of applying the skip mask to a node color is
+non\-zero the node will not be returned by the function, but lexically
+larger nodes with the same key will still be considered (i.e. the
+node will be
+.Dq skipped
+when walking the list of same\-key nodes looking for an acceptable
+match).  If the result of applying the ignore mask is non\-zero however,
+then the node and all lexically larger nodes with the same key will
+not be considered candidates to return and the operation will examine
+nodes with a different key (a shorter prefix for longest\-match operations,
+or a lexically larger or smaller key for tree walks) instead.  In
+effect a node will only be returned by a colored search or walk if
+both the ignore and skip masks return a zero result when applied to
+the node color (though if a node match function has also been supplied
+it may also be consulted to determine match equality).  It should also
+be clear that supplying a zero\-valued color mask for either or both
+of these ensures that no node will be
+.Dq skipped
+and/or
+.Dq ignored .
+.Pp
+A more powerful, but more costly, implementation of the same basic
+functions may instead be achieved by the specification of node comparison
+and match functions.  These functions are established at tree initialization
+time by passing a structure of type
+.Fa rtt_cmpfuncs_t
+with the following function pointer members filled in appropriately:
+.Bd -literal
+    int (*rttc_cmp)(const rttree_t *, const rtnode_t *, const rtnode_t *);
+    int (*rttc_match)(const rttree_t *, const rtnode_t *, const void *);
+.Ed
+.Pp
+Both functions return one of the results
+.Fa RTT_CMP_LT ,
+.Fa RTT_CMP_EQ
+or
+.Fa RTT_CMP_GT .
+The
+.Fn rttc_cmp
+entry is called during tree modification operations to determine
+the desired relative lexical ordering of two nodes with the same
+key; the returned value expresses the relationship of the first
+.Fa rtnode_t
+argument with respect to the second.  The function may (indeed, is
+expected to) access data in the larger application structure the
+node is embedded in to make this determination.  The constraints
+on its operation are that its results must be consistent for multiple
+nodes (if node 1 is less than node 2, and node 2 is less than node
+3, then node 1 must be less than node 3 as well) and that the data
+used to make this determination must not change in a way which effects
+the result while the node is installed in the tree.  Note that this
+operation is analogous to the lexical ordering comparison done using
+masked node colors; if both mechanisms are employed in the same tree
+the color comparison is performed first and the comparison function
+is called only when the masked color results are equal.  The
+.Fa rttree_t
+tree root structure is the tree in which the nodes are (or will
+be) stored and is included in case the context is useful for
+the function's implementation.
+.Pp
+The
+.Fn rttc_match
+function is called during search and walk operations which
+require it.  The
+.Fa "void *"
+argument is a copy of the argument provided to the library function,
+which treats it as opaque data used only for this purpose; it is
+intended as a way for the application to inform its match function
+of the type of nodes it desires to match.  A return value of
+.Fa RTT_CMP_EQ
+indicates that the node is an acceptable return value for the
+function.  A return value of
+.Fa RTT_CMP_LT
+indicates that this node is not an acceptable return value for
+the search but that another lexically larger node with the same
+key may be, analogous to a non\-zero skip color mask
+result, while a return value of
+.Fa RTT_CMP_GT
+indicates than neither this node nor lexically larger node with the
+same key is acceptable and that the search or walk should examine
+nodes with different keys instead, analogous to a non\-zero
+ignore color mask result.  When both the color mask and match function
+operations are employed during a search the color mask results are
+examined first, with the function being consulted only if the former
+both return zero results.  Again, the
+.Fa rttree_t
+tree root structure is the tree in which the search is
+being performed and is provided in case the context is useful
+to the match function implementation.
+.Pp
+Note that storing multiple nodes with the same key and key length
+in a
+.Tn rttree
+requires that an ordering color mask and/or a node comparison function
+be provided at tree initialization time.  For searches and walks
+required to return particular subsets of nodes, however, another
+approach is possible: coding the search in application code.  The
+basic search and walk functions return the first (lexically least)
+node with the particular key found by that search.  Given this, the
+application may use the
+.Fn rttree_dest_next
+function to examine other nodes with the same key in lexical order, while
+.Fn rttree_parent ,
+.Fn rttree_next ,
+.Fn rttree_prev
+or one of the subtree variants may be called to find nodes with other
+keys as appropriate for the search.  While there are certain minor
+performance advantages to using the library functions and defined
+matches instead (particularly if the node can be found using color
+alone) the most convenient method for the application is probably
+the best.
+.Pp
+As described above, a
+.Tn rttree
+is idenfied by a root structure of type
+.Fa rttree_t 
+which is allocated by the
+user but must be initialized by a call to
+.Fn rttree_init
+with arguments describing the type and location of the key and certain
+other options before it can be used.  The
+.Fa p_offset
+argument provides the offset from the node structure to a pointer to
+the key material, as described above.  If set to
+.Fa RTTREE_PTR_NONE
+(or zero) the key is located in the same structure as the node.
+The value of
+.Fa k_offset
+is an offset to the start of the key, either from the start of
+the
+.Fa rtnode_t
+structure or from the pointed\-to location, computed as described
+above.
+.Pp
+The argument
+.Fa root_lut
+specifies a default size for a LUT associated with the root inode.  It is
+a small integer of type
+.Fa rtt_size_t
+specifying the number of entries in the lookup table, a power of 2 between
+2 and 256 inclusive, encoded the same way as the parameter in calls to
+the lookup table allocation function.  The defined values
+.Fa RTT_LUT_2 ,
+.Fa RTT_LUT_4 ,
+and so on to
+.Fa RTT_LUT_256
+may be utilized.  Note that it may be advantageous to always request that
+a maximum size LUT (i.e. specifing this value as
+.Fa RTT_LUT_256 )
+be attached to the tree root unless there is a reason not to (e.g. a very
+large number of sparsely\-populated trees will be used, making the
+memory expenditure significant).  Since all searches begin at the root
+of the tree a large lookup table there will provide a performance benefit
+for all searches and will also save the modification functions the (modest)
+work of growing the root lookup table as nodes are added to the
+tree.  Alternatively, specifying this parameter as
+.Fa RTT_LUT_2
+results in no default root allocation being made, with the root LUT
+instead being grown as minimally necessary to improve search performance.
+.Pp
+The
+.Fa lex_cmask
+parameter provides a color mask to be applied to node colors to determine
+the lexical ordering of nodes with the same key, as described
+above.  Specifying a value
+.Fa RTTREE_CMASK_NONE
+(or zero) disables the consideration of node color for lexical
+ordering.  The parameter
+.Fa mem_funcs
+is a pointer to the
+.Fa rtt_alloc_t
+structure providing memory allocation and free functions for the tree.  This
+pointer must be non\-NULL and the structure it points to have all required
+function handles initialized.  The pointer is recorded in the tree root
+structure being initialized, so the structure and its members must remain
+unchanged while the tree is in use.  The parameter
+.Fa cmp_funcs
+is a pointer to a
+.Fa rtt_cmpfuncs_t
+structure filled in with the comparison and match procedure handles
+called to determine node lexical ordering and auxilliary data matching,
+as described above.  This
+pointer, or either of the function pointers, may be
+.Fa NULL ;
+an unspecified function simply disables use of the feature (unspecified
+functions are treated as if the function returned
+.Fa RTT_CMP_EQ ).
+Note that a pointer to this structure is
+.Em not
+cached internally, rather the individual function pointers are copied
+out by
+.Fn rttree_init ,
+so the structure itself may be discarded after the invocation of the
+function completes.  Finally, the
+.Fa stats
+argument is a pointer to a structure of type
+.Fa rtt_stats_t ,
+defined in
+.Ao Pa rttree.h Ac ,
+which, if specified as a non\-NULL value, the tree modification functions
+will update to track certain statistics about the state of the tree
+including the number of nodes and nodes with unique keys present in
+the tree, the number and size of internally allocated structures being
+used and the number of each type of modification operation
+executed.  If these numbers are interesting to the application it
+may allocate the structure and provide it to
+.Fn rttree_init .
+Note that it is permitted to provide a pointer to the same structure
+to the initialization operation for several trees if it is known that
+modifications to these trees will be serialized (the updates to the
+statistics are not atomic) and if only aggregate statistics for all
+trees are desired.  Because of the latter possibility,
+.Fn rttree_init
+does not initialize the statistics to zero since it cannot know when
+this would be appropriate; a call to
+.Fn rttree_stats_init
+may be made by the application to do this instead.
+.Pp
+The call to
+.Fn rttree_init
+will return
+.Fa RTTREE_OK
+if it is successful, or one of a variety of errors if not.  The errors
+are returned in response to parameter errors or inappropriate alignment
+of the root structure in memory; they are predictable and generally
+indicate a programming error by the caller.  In particular, while an
+attempt may be made to allocate a lookup table if the
+.Fa root_lut
+parameter is non\-trivial the failure of this allocation will not
+cause an error to be returned; the allocation will instead be retried
+when future function calls to modify the structure are made.
+.Pp
+Once a
+.Tn rttree
+is initialized it must not be reinitialized, nor may the
+.Fa rttree_t
+root structure be freed, without first freeing resources which
+may have been associated with the tree by its previous initialization.  There
+are two ways to accomplish this.  The function
+.Fn rttree_release
+will free all remaining resources from a tree from which all nodes have
+previously been deleted with
+.Fn rttree_delete ;
+an error will instead be returned if nodes still
+remain in the tree.  The operation of this function is compatible with
+continued concurrent lookups (which will be returning
+.Fa NULL
+exclusively in an empty tree); once
+.Fn rttree_release
+has executed successfully the tree root may be freed or
+re\-initialized.  The alternative is to execute
+.Fn rttree_destroy .
+The latter function may operate on a non\-empty tree, and will free
+all internal data structure associated with the tree, but may be
+executed only if it is known that no concurrent lookups are being
+performed; it makes no attempt to keep the data structure internally
+consistent while it is operating.  The returned value from
+.Fn rttree_destroy
+is the head a list of all the nodes found remaining in the tree when the
+internal data structure was freed, in case the caller has no other way
+to track the now\-untethered nodes it added.  These are linked through
+a pointer internal to the node so that they may be traversed with
+.Fn rttree_dest_next
+(though no other library function may be called with these nodes as
+parameters since the nodes are no longer in a tree)
+perhaps with code similar to:
+.Bd -literal
+	rn = rttree_destroy(rr);
+	while (rn) {
+		rtnode_t *rn_next = rttree_dest_next(rn);
+
+		node_free(rn);
+		rn = rn_next;
+	}
+.Ed
+.Pp
+The function
+.Fn rttree_tune
+may be called after a
+.Tn rttree
+is initialized to specify an
+.Em "optimization schedule" ,
+pointed to by the
+.Fa opt_sched
+parameter,
+to be used to build the tree
+.Fa rr .
+Optimization schedules define when lookup table optimization structures
+are allocated and freed and control how much memory is devoted to these
+structures, which in turn defines the performance of the structure for
+lookups.  A schedule is generally characterized by the worst case amount
+of memory that might be spent on LUTs as a fraction of the memory devoted
+to (the necessary) inodes; for these purposes an inode is considered to
+be 8 pointers in size.  Two global optimization schedules are maintained
+internal to the library and declared in
+.Ao Pa rttree.h Ac .
+The first of these,
+.Fa rttree_opt_timid ,
+is the default schedule chosen by
+.Fn rttree_init
+and limits the worst case memory consumption to about a quarter of the
+space devoted to inodes; the actual memory consumed is often about
+40% or 50% of this maximum in real tables, or about 10% to 12% of the
+total inode space.  An alternative schedule,
+.Fa rttree_opt_aggressive ,
+may be put into service with a call to
+.Fn rttree_tune
+after the tree
+.Fa rr
+has been initialized.  This schedule limits the worst case lookup table
+memory consumption to 100% of the space used by inodes; the actual consumption
+will tend to be less than 50% of that maximum.  While the schedule may be
+changed at any time after the tree is initialized the change will only
+effect future LUT allocations and will adjust the LUT allocations
+in an existing tree only in segments of the tree effected by future
+modifications.  If it is desired to change the optimization schedule
+for a tree from the default this is probably best done immediately after
+the call to
+.Fn rttree_init
+initializing the tree.  Note that it is also possible for a library
+user to provide their own optimization schedule for use in building
+the tree; anyone wishing to do so should familiarize themselves with
+the library internals.
+.Pp
+The function
+.Fn rttree_add
+adds a node
+.Fa rn
+with a node key length of
+.Fa k_len
+bits to the tree
+.Fa rr .
+The node added should not currently be present in any other
+tree and must have had its key and auxilliary data used for
+node comparisons (if any) fully initialized before the call.  The addition
+will fail if an
+.Dq "equal"
+node is already present in the tree, if the specified key length is
+very long or if an inode is required but its allocation fails.  The
+function
+.Fn rttree_add_c
+performs the same operation but additionally associates a color
+.Fa color
+with the node (otherwise the color value defaults to zero).
+.Pp
+The function
+.Fn rttree_delete
+deletes node
+.Fa rn
+from tree
+.Fa rr .
+This function will fail if the node is not in the specified tree (while
+deletes of a node are possible without knowing the tree it is being
+deleted from the function checks that the correct tree was specified
+to catch programming errors and ensure correct statistics accounting) but
+otherwise is guaranteed to succeed.
+.Pp
+The function
+.Fn rttree_change
+deletes the node
+.Fa o_rn
+and adds the node
+.Fa n_rn
+to the tree
+.Fa rr .
+Both nodes are required to have the same key and key length; the
+key length for
+.Fa n_rn
+is copied from
+.Fa o_rn .
+The function
+.Fn rttree_change_c
+performs the same operation but additionally provides a node
+.Fa color
+to be associated with
+.Fa n_rn
+(the color value is otherwise set to zero).  The node
+.Fa o_rn
+must already be present in the specified tree while the node
+.Fa n_rn
+must not be installed in any tree if it
+is not the same node as
+.Fa o_rn .
+The end result of the function execution will be the same as if
+.Fa o_rn
+were deleted from the tree and
+.Fa n_rn
+were separately added, but will save the overhead of manipulating
+internal data structures to do so.  Particular reasons to use this
+function might be if the addition of
+.Fa n_rn
+should, at the application level, lead to the deletion of
+.Fa o_rn ,
+or if the auxilliary data associated with
+.Fa o_rn
+defining its lexical ordering against same\-key nodes is in need
+of change; in a volatile
+.Tn rttree
+the only way to perform such a change is to replace the old node
+with a new node with updated auxilliary data.  Note, however, that
+in a non\-volatile tree it is possible to update the auxilliary
+data in place and then call one of these functions with
+.Fa o_rn
+and
+.Fa n_rn
+pointing at the same, now\-modified node, in which case the effect
+of the call would be to reevaluate the ordering of the node with
+respect to other nodes having the same key.  If the latter operation
+is performed, however, the caller is responsible for ensuring that
+the tree is in fact non\-volatile, and that no concurrently operating
+lookups are in progress, since altering a node already in the tree
+in this fashion may cause the latter to fail in indeterminant (and
+possibly serious) ways.  Note also that calls to these functions
+may fail for the same reasons that a separate delete of
+.Fa o_rn
+and add of
+.Fa n_rn
+would fail, or if the keys of
+.Fa o_rn
+and
+.Fa n_rn
+are not in fact the same, except that the call is guaranteed to make no
+attempt to allocate a new inode and hence will not fail for that reason.
+.Pp
+For nodes already added to a tree a number of
+.Dq trivial
+operations are supported, and may have an in\-line implementation.  The
+function
+.Fn rttree_key_length
+returns the key length of node
+.Fa rn
+in bits, this will be the same value specified when the node was
+added.  Similarly the function
+.Fn rttree_color
+returns the color associated with node
+.Fa rn .
+The function
+.Fn rttree_dest_next ,
+when called with a node
+.Fa rn ,
+returns the next lexically larger node in the tree having the
+same key or
+.Fa NULL
+if no lexically larger node with the same key is present.  The function
+.Fn rttree_is_child
+returns
+.Fa true
+if
+.Fa rn
+is a child node, i.e. that no nodes with a longer matching prefix are
+present in the tree, or
+.Fa false
+otherwise.  Finally, the function
+.Fn rttree_parent ,
+given a node
+.Fa rn
+in a tree, will return a node which is the longest prefix parent of
+.Fa rn ,
+that is the node with a key which is the longest prefix match of
+.Fa rn 's
+key present in the tree.
+.Fa NULL
+will be returned if the node has no parent, and when more than one
+parent with the same key is present the first (i.e. lexically smallest)
+node is the one returned.  These functions are termed
+.Dq "trivial"
+since the structure of the
+.Tn rttree
+makes their implementation direct and quite simple. A function
+.Fn rttree_dest_prev
+is also provided to walk same\-key nodes in the direction opposite
+to
+.Fn rttree_dest_next
+but it is difficult to call the former function
+.Dq trivial ;
+the data structure connecting same\-key nodes is directional and its
+natural direction is that of
+.Fn rttree_dest_next .
+.Pp
+The function
+.Fn rttree_lookup
+performs a longest\-match lookup of the key
+.Fa kp
+in the tree
+.Fa rr ,
+returning a node with a key which is the longest\-matching
+prefix of
+.Fa kp
+currently in the tree.  The search key
+.Fa kp
+is assumed to be at least as long as the longest key associated with
+a node in the tree; no length is required since key comparisons will
+be performed only to the length of the key of the node found.  When
+more than one node with the same key is present it is the first
+(lexically least) node which is returned.  A
+.Fa NULL
+value is returned if there is no node with a matching prefix in the
+tree; if a node with a zero\-length prefix is present a
+.Fa NULL
+value will never be returned.  This provides the
+.Dq classic
+longest\-match lookup functionality required by, e.g., network
+protocols.  The functions
+.Fn rttree_lookup_c ,
+.Fn rttree_lookup_x
+and
+.Fn rttree_lookup_cx
+perform the same longest\-match operation but only return nodes which
+match the color mask and/or match function constraints determined by
+the ignore color mask
+.Fa ig_mask ,
+the skip color mask
+.Fa sk_mask
+and/or the
+.Fa thunk
+argument which is passed to the match function to implement a
+node equality determination.  The node
+returned need not be the first node with the same key, and may have
+a shorter key than that found by the unconstrained lookup provided by
+.Fn rttree_lookup ,
+but will be the lexically least node with the longest key from among
+those which match the constraints.
+.Pp
+The function
+.Fn rttree_plookup
+performs a longest\-match
+lookup of the key pointed to by
+.Fa kp
+in the tree
+.Fa rr ,
+returning the node with a key which is the longest matching prefix
+of
+.Fa kp
+in the tree with a key length no longer than
+.Fa k_len .
+The key referred to by
+.Fa kp
+must be at least
+.Fa k_len
+bits in length.  The functions
+.Fn rttree_plookup_c ,
+.Fn rttree_plookup_x
+and
+.Fn rttree_plookup_cx
+perform the same operation but constrain the nodes which may be
+returned to the subset meeting the color mask and/or match
+function constraints.
+.Pp
+The function
+.Fn rttree_find
+finds a node in tree
+.Fa rr
+with a key of length
+.Fa k_len
+which matches the key pointed to by
+.Fa kp
+to that length, or a
+.Fa NULL
+value if no matching node exists.  In effect it performs an exact
+match lookup; in the presence of multiple nodes with the same key
+it returns the first (lexically least) node.  The functions
+.Fn rttree_find_c ,
+.Fn rttree_find_x
+and
+.Fn rttree_find_cx
+operate similarly but return the first exact matching node encountered
+which meets the color mask and/or match function constraints (not
+necessarily the lexical least).
+.Pp
+The function
+.Fn rttree_sub_first
+returns the lexically smallest node with a key which is at least
+.Fa st_bits
+in length which matches the prefix pointed to by
+.Fa kp
+to that length.  The function
+.Fn rttree_sub_last
+operates similarly but instead returns the node with the lexically largest
+key matching that prefix.  If there are multiple nodes with the same key
+as the node returned the latter will be the first of these.  The functions
+.Fn rttree_sub_first_c ,
+.Fn rttree_sub_first_x ,
+.Fn rttree_sub_first_cx ,
+.Fn rttree_sub_last_c ,
+.Fn rttree_sub_last_x
+and
+.Fn rttree_sub_last_cx
+perform the same operation as their basic sibling but return only nodes
+which meet the constraints of the specified color masks and/or match
+function.  A
+.Fa NULL
+value is returned if there are no nodes in the tree with the specified
+prefix, or if there are no nodes with the specified prefix meeting
+the color and match constraints.
+.Pp
+The function
+.Fn rttree_next ,
+given a node
+.Fa rn
+in a tree
+.Fa rr ,
+returns node with the next lexically larger key present in
+the tree, or
+.Fa NULL
+if the key associated with
+.Fa rn
+is the largest in the tree.  The node returned is always the first
+(lexically least) node with its key, though
+.Fa rn
+need not be; any argument node with the same key will get the
+same result.  If the function is called with
+.Fa rn
+specified as
+.Fa NULL
+the first node with the lexically smallest key in the tree will
+be returned.  The functions
+.Fn rttree_next_c ,
+.Fn rttree_next_x
+and
+.Fn rttree_next_cx
+perform a similar function but return only nodes matching the
+color mask and/or match function constraints and may return
+any node with a particular key which matches those constraints.  This
+has some effects which make them behave in a slightly different
+fashion than the
+basic
+.Fn rttree_next
+function.  First, while the latter always returns a node with the immediate
+successor key in lexical order, and is hence guaranteed to find a result
+with
+.Em O(1)
+work, an over\-constrained invocation of the former functions may search
+all nodes in the tree looking for a result which may not exist.  A user
+of these functions should take care not to request an operation which
+might take an excessive amount of time to execute.  Second, while the
+basic
+.Fn rttree_next
+is guaranteed to always return a node with a different key than its
+.Fa rn
+parameter, the other functions may return lexically larger nodes with
+the same key as the parameter node.  In particular this means that
+while
+.Fn rttree_next
+can be used to implement a walk through each (lexically least) node
+in the tree with different keys the function
+.Fn rttree_next_c ,
+when called with zero\-valued color masks, can be used to implement
+a walk through all nodes in the tree, including all nodes with the
+same key, in lexical order.
+.Pp
+The function
+.Fn rttree_prev
+and its colored and/or match function siblings
+.Fn rttree_prev_c ,
+.Fn rttree_prev_x
+and
+.Fn rttree_prev_cx ,
+operate entirely analogously to
+.Fn rttree_next
+and siblings except that the walk proceeds in the opposite lexical
+order, returning lexically smaller nodes.  The only additional issue
+of note is that, while the basic
+.Fn rttree_next
+and
+.Fn rttree_prev
+functions exhibit pretty much identical performance characteristics, doing
+the same operations in opposite directions, for the other functions which
+examine nodes with the same key the minimal, directional nature of
+the data structure connecting same\-key nodes makes the
+.Fn _next
+direction much more natural, and hence cheaper to traverse, than
+the
+.Fn _prev
+direction.  An application is better off if it walks same\-key nodes
+in the preferred direction whenever possible.
+.Pp
+The functions
+.Fn rttree_sub_next
+and
+.Fn rttree_sub_prev
+operate similarly to
+.Fn rttree_next
+and
+.Fn rttree_prev ,
+respectively, but operate only in a subtree matching the key
+of the argument node
+.Fa rn
+to a length of
+.Fa st_len
+bits.  The functions return
+.Fa NULL
+if no node with a key lexically larger or smaller (as appropriate) than
+the parameter node exists, if the parameter node has a key length
+shorter than
+.Fa st_len
+or is specified as
+.Fa NULL .
+The functions
+.Fn rttree_sub_next_c ,
+.Fn rttree_sub_next_x ,
+.Fn rttree_sub_next_cx ,
+.Fn rttree_sub_prev_c ,
+.Fn rttree_sub_prev_x
+and
+.Fn rttree_sub_prev_cx
+return nodes similarly sharing a prefix in common with the
+.Fa rn
+parameter but constrained by the color mask and/or match function
+parameters.  As a group these functions perform walks in a subtree
+the way
+.Fn rttree_next ,
+.Fn rttree_prev
+and their siblings do in the full tree.
+.Pp
+The function
+.Fn rttree_prune_next
+returns the next lexically larger node in the tree which does not
+share a prefix of length
+.Fa st_len
+with the argument node
+.Fa rn .
+The function
+.Fn rttree_prune_prev
+performs a similar operation in the opposite direction.  In either case
+the node returned will be the first node if multiple nodes with the
+same key exist, and the same node will be returned by these functions
+for any argument node
+.Fa rn
+sharing a common prefix of length
+.Fa st_len .
+The effect, then, is to continue a walk, like
+.Fn rttree_next
+or
+.Fn rttree_prev
+would, but skipping over those nodes which share a prefix with
+the argument.  The functions
+.Fn rttree_prune_next_c ,
+.Fn rttree_prune_next_x ,
+.Fn rttree_prune_next_cx ,
+.Fn rttree_prune_prev_c ,
+.Fn rttree_prune_prev_x
+and
+.Fn rttree_prune_prev_cx
+behave as would be expected, returning nodes which do not share a
+prefix with the argument but which meet the specified color mask
+and/or match function constraints.  Note that if the argument
+node has a key length less than
+.Fa st_len
+bits, or is
+.Fa NULL ,
+the same result is returned that would be returned by
+.Fn rttree_next
+or
+.Fn rttree_prev
+and siblings, with the exception that the color mask and match function
+variants will not return a node with the same key as the parameter
+node.
+.Pp
+Finally, the function
+.Fn rttree_getnext
+searches for a node in tree
+.Fa rr
+with a key which is the nearest lexically
+larger than the key pointed to by
+.Fa kp
+of length
+.Fa k_len .
+If the
+.Fa ret_match
+parameter is
+.Fa true
+a node with a key which is an exact match for the argument key and key
+length will be returned if one is present, otherwise a node with a lexically
+larger key will be returned exclusively.  The node returned will be the
+same node that would be returned by a call to
+.Fn rttree_next
+if a node with the key described by
+.Fa kp
+and
+.Fa k_len
+were present in the tree and given to the latter function as a parameter.  The
+function
+.Fn rttree_getprev
+performs the same operation but travels in the opposite direction.  The
+functions
+.Fn rttree_getnext_c ,
+.Fn rttree_getnext_x ,
+.Fn rttree_getnext_cx ,
+.Fn rttree_getprev_c ,
+.Fn rttree_getprev_x
+and
+.Fn rttree_getprev_cx
+do the analgous functions returning nodes constrained by color masks
+and or a match function.  Note that these latter functions will return a
+node with the same key as
+.Fa kp
+and
+.Fa k_len
+if the
+.Fa ret_match
+argument is
+.Fa true
+but will not if it is
+.Fa false .
+The semantics of these constrained searches are a little frayed so
+an application which might use these operations to process queries
+and provide reponses for the purpose of, say, dumping out a segment
+of the contents of
+.Fa rr
+in lexical order, might wish to construct more application\-specific
+searches for
+.Dq next
+or
+.Dq previous
+same\-key node.
+.Sh RETURN VALUES
+The functions
+.Fn rttree_init ,
+.Fn rttree_add ,
+.Fn rttree_add_c ,
+.Fn rttree_delete ,
+.Fn rttree_change ,
+.Fn rttree_change_c ,
+.Fn rttree_release
+and
+.Fn rttree_tune
+return 0 (or
+.Bq Er RTTREE_OK )
+upon success or one of the following error
+codes upon failure:
+.Bl -tag -width "RTTREE_ERR_KEY_OFFSET    "
+.It Bq Er RTTREE_NOMEMORY
+The requested node add operation failed because a necessary memory allocation
+failed.
+.It Bq Er RTTREE_DUP
+The requested add or change operation failed because the node evaluated as
+.Dq equal
+to a node already in the tree.
+.It Bq Er RTTREE_ERR_LENGTH
+The specified length of a key is too long to represent internally.
+.It Bq Er RTTREE_ERR_PARAM
+A required parameter is missing, or
+.Fa NULL .
+.It Bq Er RTTREE_ERR_NOTFOUND
+A call to
+.Fn rttree_delete
+or
+.Fn rttree_change
+found that a node claimed to be currently in the tree was in fact not
+present.
+.It Bq Er RTTREE_ERR_PTR_OFFSET
+The pointer offset provided to
+.Fn rttree_init
+is too large or otherwise seems unlikely to be correct.
+.It Bq Er RTTREE_ERR_KEY_OFFSET
+The key offset provided to
+.Fn rttree_init
+seems unlikely to be correct.
+.It Bq Er RTTREE_ERR_LUT_SIZE
+The default LUT size parameter to
+.Fn rttree_init
+is not a valid value.
+.It Bq Er RTTREE_ERR_ROOT_ALIGN
+The
+.Fa rttree_t
+root structure passed to
+.Fn rttree_init
+is not well\-aligned.  The structure must be aligned to an 8 byte
+address boundary.
+.It Bq Er RTTREE_ERR_NOT_EMPTY
+A call to
+.Fn rttree_release
+found the tree was not empty and still had nodes present.
+.It Bq Er RTTREE_ERR_INVALID
+The optimization schedule passed as an argument to
+.Fn rttree_tune
+has low water marks larger than the corresponding high water marks.
+.El
+.Pp
+Functions which return
+.Ft rtnode_t
+pointers can seldom detect programming errors, but generally
+return a
+.Fa NULL
+value when they do.
+.Sh SEE ALSO
+.Xr rttree_v 3

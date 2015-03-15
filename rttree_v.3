@@ -1,0 +1,654 @@
+.\"     $NetBSD: Exp $
+.\"
+.\" Copyright (c) 2014 The NetBSD Foundation, Inc.
+.\" All rights reserved.
+.\"
+.\" This code is derived from software contributed to The NetBSD Foundation
+.\" by Dennis Ferguson.
+.\"
+.\" Redistribution and use in source and binary forms, with or without
+.\" modification, are permitted provided that the following conditions
+.\" are met:
+.\" 1. Redistributions of source code must retain the above copyright
+.\"    notice, this list of conditions and the following disclaimer.
+.\" 2. Redistributions in binary form must reproduce the above copyright
+.\"    notice, this list of conditions and the following disclaimer in the
+.\"    documentation and/or other materials provided with the distribution.
+.\"
+.\" THIS SOFTWARE IS PROVIDED BY THE NETBSD FOUNDATION, INC. AND CONTRIBUTORS
+.\" ``AS IS'' AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED
+.\" TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR
+.\" PURPOSE ARE DISCLAIMED.  IN NO EVENT SHALL THE FOUNDATION OR CONTRIBUTORS
+.\" BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+.\" CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+.\" SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+.\" INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+.\" CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+.\" ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+.\" POSSIBILITY OF SUCH DAMAGE.
+.\"
+.\" 
+.Dd July 4, 2014
+.Dt RTTREE_V 3
+.Os
+.Nm rttree_dest_next_v ,
+.Nm rttree_find_v ,
+.Nm rttree_find_c_v ,
+.Nm rttree_find_cx_v ,
+.Nm rttree_find_x_v ,
+.Nm rttree_getnext_v ,
+.Nm rttree_getnext_c_v ,
+.Nm rttree_getnext_cx_v ,
+.Nm rttree_getnext_x_v ,
+.Nm rttree_getprev_v ,
+.Nm rttree_getprev_c_v ,
+.Nm rttree_getprev_cx_v ,
+.Nm rttree_getprev_x_v ,
+.Nm rttree_lookup_v ,
+.Nm rttree_lookup_c_v ,
+.Nm rttree_lookup_cx_v ,
+.Nm rttree_lookup_x_v ,
+.Nm rttree_next_v ,
+.Nm rttree_next_c_v ,
+.Nm rttree_next_cx_v ,
+.Nm rttree_next_x_v ,
+.Nm rttree_parent_v ,
+.Nm rttree_plookup_v ,
+.Nm rttree_plookup_c_v ,
+.Nm rttree_plookup_cx_v ,
+.Nm rttree_plookup_x_v ,
+.Nm rttree_prev_v ,
+.Nm rttree_prev_c_v ,
+.Nm rttree_prev_cx_v ,
+.Nm rttree_prev_x_v ,
+.Nm rttree_prune_next_v ,
+.Nm rttree_prune_next_c_v ,
+.Nm rttree_prune_next_cx_v ,
+.Nm rttree_prune_next_x_v ,
+.Nm rttree_prune_prev_v ,
+.Nm rttree_prune_prev_c_v ,
+.Nm rttree_prune_prev_cx_v ,
+.Nm rttree_prune_prev_x_v ,
+.Nm rttree_sub_first_v ,
+.Nm rttree_sub_first_c_v ,
+.Nm rttree_sub_first_cx_v ,
+.Nm rttree_sub_first_x_v ,
+.Nm rttree_sub_last_v ,
+.Nm rttree_sub_last_c_v ,
+.Nm rttree_sub_last_cx_v ,
+.Nm rttree_sub_last_x_v ,
+.Nm rttree_sub_next_v ,
+.Nm rttree_sub_next_c_v ,
+.Nm rttree_sub_next_cx_v ,
+.Nm rttree_sub_next_x_v ,
+.Nm rttree_sub_prev_v ,
+.Nm rttree_sub_prev_c_v ,
+.Nm rttree_sub_prev_cx_v ,
+.Nm rttree_sub_prev_x_v
+.Sh NAME
+.Nm rttree_v
+.Nd perform read operations in a concurrent best match route lookup tree
+.Sh LIBRARY
+.\" .Lb librttree
+Concurrent Route Tree Library (librttree, \-lrttree)
+.Sh SYNOPSIS
+.In rttree.h
+.Ft rtnode_t *
+.Fn rttree_dest_next_v "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_find_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len"
+.Ft rtnode_t *
+.Fn rttree_find_c_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_find_cx_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_find_x_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_getnext_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match"
+.Ft rtnode_t *
+.Fn rttree_getnext_c_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_getnext_cx_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_getnext_x_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_getprev_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match"
+.Ft rtnode_t *
+.Fn rttree_getprev_c_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_getprev_cx_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_getprev_x_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "bool ret_match" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_lookup_v "rttree_t *rr" "const uint32_t *kp"
+.Ft rtnode_t *
+.Fn rttree_lookup_c_v "rttree_t *rr" "const uint32_t *kp" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_lookup_cx_v "rttree_t *rr" "const uint32_t *kp" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_lookup_x_v "rttree_t *rr" "const uint32_t *kp" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_next_v "rttree_t *rr" "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_next_c_v "rttree_t *rr" "rtnode_t *rn" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_next_cx_v "rttree_t *rr" "rtnode_t *rn" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_next_x_v "rttree_t *rr" "rtnode_t *rn" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_parent_v "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_plookup_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len"
+.Ft rtnode_t *
+.Fn rttree_plookup_c_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_plookup_cx_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_plookup_x_v "rttree_t *rr" "const uint32_t *kp" "u_int k_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prev_v "rttree_t *rr" "rtnode_t *rn"
+.Ft rtnode_t *
+.Fn rttree_prev_c_v "rttree_t *rr" "rtnode_t *rn" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_prev_cx_v "rttree_t *rr" "rtnode_t *rn" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prev_x_v "rttree_t *rr" "rtnode_t *rn" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prune_next_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_prune_next_c_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_prune_next_cx_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prune_next_x_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prune_prev_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_prune_prev_c_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_prune_prev_cx_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_prune_prev_x_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_first_v "rttree_t *rr" "const uint32_t *kp" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_sub_first_c_v "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_sub_first_cx_v "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_first_x_v "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_last_v "rttree_t *rr" "const uint32_t *kp" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_sub_last_c_v "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_sub_last_cx_v "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_last_x_v "rttree_t *rr" "const uint32_t *kp" "u_int st_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_next_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_sub_next_c_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_sub_next_cx_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_next_x_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_prev_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len"
+.Ft rtnode_t *
+.Fn rttree_sub_prev_c_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask"
+.Ft rtnode_t *
+.Fn rttree_sub_prev_cx_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "rtt_colormask_t ig_mask" "rtt_colormask_t sk_mask" "const void *thunk"
+.Ft rtnode_t *
+.Fn rttree_sub_prev_x_v "rttree_t *rr" "rtnode_t *rn" "u_int st_len" "const void *thunk"
+.Sh DESCRIPTION
+A
+.Tn rttree
+is a data structure providing efficient support for longest\-match lookups
+of the type often used to make network protocol routing decisions.  The
+implementation is designed to support both conventional applications
+requiring the facilities the data structure provides and to allow lockless
+read access concurrent with add, delete and change operations in threaded
+programs and the kernel environment.  This page describes functions in the
+library designed for lockless, read\-only access to
+.Dq volatile
+trees, that is multithreaded or interrupt contexts where an instantiation
+of the structure modification functions
+.Fn rttree_add ,
+.Fn rttree_deleete
+or
+.Fn rttree_change
+may be concurrently executing.  Functions which perform equivalent
+operations in non\-volatile
+.Tn rttrees
+and a general overview of the data structure itself are described at
+.Xr rttree 3 .
+.Pp
+To evaluate the suitability of this structure for particular applications
+where the ability for readers to do searches without serializing their
+operation with threads updating the structure it is probably useful
+to understand the nature and limitations of the concurrency supported.  A
+.Tn rttree
+is a fairly complex, highly connected data structure which cannot be
+modified atomically; that is, code providing the lookups performed in
+a volatile tree which is in the process of being modified may observe
+the data structure in states which a non\-volatile lookup would
+never see.  The guarantee for lookup behavior is hence more modest;
+the tree is maintained throughout a modification such that an individual
+lookup in progress concurrently with a single modification
+will find a result which is either the result that would be found in
+a non\-volatile tree before the modification or after the modification,
+and nothing else.  It is not guaranteed that differently\-keyed lookups
+will see the pre\- or post\-modification results at precisely the
+same time (though this seems unlikely to have consequences since the
+notion of
+.Dq "same time"
+in a multithreaded environment is fluid), but it is guaranteed that
+each lookup will find a result that would be observed in a non\-volatile
+environment at some point.  That this should always be true is how the
+implementation defines
+.Dq correct
+behavior for lookups of the type performed by
+.Fn rttree_lookup_v ,
+.Fn rttree_plookup_v ,
+.Fn rttree_find_v ,
+.Fn rttree_sub_first_v
+and
+.Fn rttree_sub_last_v .
+.Pp
+Note, however, that this property is not guaranteed for longest\-match
+lookups which span more than a single modification.  In particular,
+longest match searches are performed in the structure in two distinct
+phases: initially a
+.Dq downward
+search is made to find a node with a long key (the
+longest in the structure that could possibly be a match) to which the
+search key is compared.  If they do not match to the full length of the
+node key, however, an additional
+.Dq upward
+search is made (not requiring
+further key comparisons) to find a node with a sufficiently short
+key to be a match.  The temporal ordering of these phases means
+that if a modifier concurrently adds a longer prefix node and then
+subsequently deletes a shorter prefix node, both of which match the
+search key, the in\-progress search may complete its downward
+search before the longer key node is added but complete its upward
+search only after the shorter key node has been deleted.  It would
+hence see the tree in a state where neither the longer nor the shorter
+prefix node is present and return a result which would not have been
+observed at any point in a non\-volatile tree.
+.Pp
+How, or whether, to deal with this possibility is a design issue for
+applications making use of this facility.  One approach might be to
+defer a process wishing to modify the structure until all lookups
+initiated before the immediately previous modification have
+completed.  The implementation of this might not be as onerous
+as it appears at first glance since keeping track of when lookups
+complete is also necessary to know when it is safe to free memory
+which was dereferenced by the previous modification, so a means
+to do this may already be required by the application.  Another
+possibility might be to perform concurrent lookups only for
+purposes where an occasional error might be acceptable.  For example,
+if the lookup is performed for the purpose of routing network
+protocol packets an occasional misrouting might not have serious
+consequences as long as the error is rarely made.  As the length
+of code executed to perform a lookup in the tree is significantly
+less that that to implement even the simplest structure modification
+it may be the case that the only way a lookup could span several
+modifications, so that errors might be observed, is when
+the lookup code is unlucky enough to be interrupted at a critical
+point where several modifications effecting its search path are
+being concurrently performed.  This might have a low enough probability
+of occurance that it would be acceptabe to ignore it.
+.Pp
+Note that the above considerations apply to the library functions
+performing lookups based on a search key for which a node with
+an exactly matching prefix is sought.  For volatile tree walk
+functions, which locate nodes with keys having a particular
+lexical relationship to their parameters the situation is less
+clear because of the increased complexity of these operations.  That
+is, while it is possible to guarantee that each of these functions
+will sucessfully return nodes with the correct lexical relationships to
+their arguments, it is not yet possible to guarantee that the results
+returned will be the same as would be observed from a non\-volatile tree at
+some point even across a single concurrent modification.  Volatile
+versions of these functions are provided regardless since the code
+implementing them is substantially the same as that implementing
+non\-volatile searches, but given the semantically fraught nature
+of their operation their use in applications should be considered
+with subtantial caution until further analysis of their behavior is
+conducted.
+.Pp
+With these caveats having been stated, versions of nearly all search
+and walk functions supported by the library have implementations
+capable of operating in a volatile tree.  These versions are distinguished
+by adding a
+.Em _v
+suffix to the function name.  Note that all of these functions are expected
+to exhibit the same functional behavior as their non\-volatile
+counterparts, and in fact the differences between the implementation of
+volatile and non\-volatile versions of these functions is generally very
+minor.  The volatile variants exist as separate functions mostly so that
+the non\-volatile versions may omit code to deal with states which can
+only occur in a volatile tree and so that if some of the volatile functions
+are discovered to have semantics which make them less than useful, or
+which require special care, the offending functions can be simply found
+in potentially effected applications by their distinguished name.  Note
+that certain functions in the library are used for both volatile and
+non\-volatile trees, in particular the modification functions
+.Fn rttree_add ,
+.Fn rttree_delete 
+and
+.Fn rttree_change
+(with their colored variants) as well as
+.Fn rttree_release ,
+the operation of all of which is described at
+.Xr rttree 3 .
+The trivial functions
+.Fn rttree_color ,
+.Fn rttree_key_length
+and
+.Fn rttree_is_child
+may also be used with argument nodes stored in a volatile tree.  Alternatively,
+the functions
+.Fn rttree_dest_next_v ,
+which when called with a node
+.Fa rn 
+in a volatile tree returns the next lexically larger node in the tree
+having the same key or
+.Fa NULL
+if no lexically larger node with the same key is present, must be used
+instead of its non\-volatile counterpart in volatile trees, as must
+the function
+.Fn rttree_parent_v
+which, given a node
+.Fa rn
+in a volatile tree, will return a node which is the longest prefix parent of
+.Fa rn ,
+that is the node with a key which is the longest prefix match of
+.Fa rn 's
+key present in the tree.
+.Pp
+The function
+.Fn rttree_lookup_v
+performs a longest\-match lookup of the key
+.Fa kp
+in a volatile tree
+.Fa rr ,
+returning a node with a key which is the longest\-matching
+prefix of
+.Fa kp
+currently in the tree.  The search key
+.Fa kp
+is assumed to be at least as long as the longest key associated with
+a node in the tree; no length is required since key comparisons will
+be performed only to the length of the key of the node found.  When
+more than one node with the same key is present it is the first
+(lexically least) node which is returned.  A
+.Fa NULL
+value is returned if there is no node with a matching prefix in the
+tree; if a node with a zero\-length prefix is present a
+.Fa NULL
+value will never be returned.  This provides the
+.Dq classic
+longest\-match lookup functionality required by, e.g., network
+protocols.  The functions
+.Fn rttree_lookup_c_v ,
+.Fn rttree_lookup_x_v
+and
+.Fn rttree_lookup_cx_v
+perform the same longest\-match operation but return only nodes
+dictated by the color mask and/or match function constraints.
+.Pp
+The function
+.Fn rttree_plookup_v
+performs a longest\-match
+lookup of the key pointed to by
+.Fa kp
+in a volatile tree
+.Fa rr ,
+returning the node with a key which is the longest matching prefix
+of
+.Fa kp
+in the tree with a key length no longer than
+.Fa k_len .
+The key referred to by
+.Fa kp
+must be at least
+.Fa k_len
+bits in length.  The functions
+.Fn rttree_plookup_c_v ,
+.Fn rttree_plookup_x_v
+and
+.Fn rttree_plookup_cx_v
+perform the same operation but constrain the nodes which may be
+returned to the subset meeting the color mask and/or match
+function constraints.
+.Pp
+The function
+.Fn rttree_find_v
+finds a node in the volatile tree
+.Fa rr
+with a key of length
+.Fa k_len
+which matches the key pointed to by
+.Fa kp
+to that length, or a
+.Fa NULL
+value if no matching node exists.  In effect it performs an exact
+match lookup; in the presence of multiple nodes with the same key
+it returns the first (lexically least) node.  The functions
+.Fn rttree_find_c_v ,
+.Fn rttree_find_x_v
+and
+.Fn rttree_find_cx_v
+operate similarly but return the first exact matching node encountered
+which meets the color mask and/or match function constraints (not
+necessarily the lexical least).
+.Pp
+The function
+.Fn rttree_sub_first_v
+returns the lexically smallest node with a key which is at least
+.Fa st_bits
+in length which matches the prefix pointed to by
+.Fa kp
+to that length in volatile tree
+.Fa rr .
+The function
+.Fn rttree_sub_last_v
+operates similarly but instead returns the node with the lexically largest
+key matching that prefix.  If there are multiple nodes with the same key
+as the node returned the latter will be the first of these.  The functions
+.Fn rttree_sub_first_c_v ,
+.Fn rttree_sub_first_x_v ,
+.Fn rttree_sub_first_cx_v ,
+.Fn rttree_sub_last_c_v ,
+.Fn rttree_sub_last_x_v
+and
+.Fn rttree_sub_last_cx_v
+perform the same operation as their basic sibling but return only nodes
+which meet the constraints of the specified color masks and/or match
+function.
+.Pp
+The function
+.Fn rttree_next_v ,
+given a node
+.Fa rn
+in a volatile tree
+.Fa rr ,
+returns node with the next lexically larger key present in
+the tree, or
+.Fa NULL
+if the key associated with
+.Fa rn
+is the largest in the tree.  The node returned is always the first
+(lexically least) node with its key, though
+.Fa rn
+need not be; any argument node with the same key will get the
+same result.  If the function is called with
+.Fa rn
+specified as
+.Fa NULL
+the first node with the lexically smallest key in the tree will
+be returned.  The functions
+.Fn rttree_next_c_v ,
+.Fn rttree_next_x_v
+and
+.Fn rttree_next_cx_v
+perform a similar function but return only nodes matching the
+color mask and/or match function constraints.
+.Pp
+The function
+.Fn rttree_prev_v
+and its colored and/or match function siblings
+.Fn rttree_prev_c_v ,
+.Fn rttree_prev_x_v
+and
+.Fn rttree_prev_cx_v ,
+operate entirely analogously to
+.Fn rttree_next_v
+and siblings except that the walk proceeds in the opposite lexical
+order, returning lexically smaller nodes.  The only additional issue
+of note is that, while the basic
+.Fn rttree_next_v
+and
+.Fn rttree_prev_v
+functions exhibit pretty much identical performance characteristics, doing
+the same operations in opposite directions, for the other functions which
+examine nodes with the same key the minimal, directional nature of
+the data structure connecting same\-key nodes makes the
+.Fn _next
+direction much more natural, and hence cheaper to traverse, than
+the
+.Fn _prev
+direction.  An application is better off if it walks same\-key nodes
+in the preferred direction whenever possible.
+.Pp
+The functions
+.Fn rttree_sub_next_v
+and
+.Fn rttree_sub_prev_v
+operate similarly to
+.Fn rttree_next_v
+and
+.Fn rttree_prev_v ,
+respectively, but operate only in a subtree matching the key
+of the argument node
+.Fa rn
+to a length of
+.Fa st_len
+bits.  The functions return
+.Fa NULL
+if no node with a key lexically larger or smaller (as appropriate) than
+the parameter node exists, if the parameter node has a key length
+shorter than
+.Fa st_len
+or is specified as
+.Fa NULL .
+The functions
+.Fn rttree_sub_next_c_v ,
+.Fn rttree_sub_next_x_v ,
+.Fn rttree_sub_next_cx_v ,
+.Fn rttree_sub_prev_c_v ,
+.Fn rttree_sub_prev_x_v
+and
+.Fn rttree_sub_prev_cx_v
+return nodes similarly sharing a prefix in common with the
+.Fa rn
+parameter but constrained by the color mask and/or match function
+parameters.  As a group these functions perform walks in a subtree
+the way
+.Fn rttree_next_v ,
+.Fn rttree_prev_v
+and their siblings do in the full tree.
+.Pp
+The function
+.Fn rttree_prune_next_v
+returns the next lexically larger node in the tree which does not
+share a prefix of length
+.Fa st_len
+with the argument node
+.Fa rn .
+The function
+.Fn rttree_prune_prev_v
+performs a similar operation in the opposite direction.  In either case
+the node returned will be the first node if multiple nodes with the
+same key exist, and the same node will be returned by these functions
+for any argument node
+.Fa rn
+sharing a common prefix of length
+.Fa st_len .
+The effect, then, is to continue a walk, like
+.Fn rttree_next_v
+or
+.Fn rttree_prev_v
+would, but skipping over those nodes which share a prefix with
+the argument.  The functions
+.Fn rttree_prune_next_c_v ,
+.Fn rttree_prune_next_x_v ,
+.Fn rttree_prune_next_cx_v ,
+.Fn rttree_prune_prev_c_v ,
+.Fn rttree_prune_prev_x_v
+and
+.Fn rttree_prune_prev_cx_v
+behave as would be expected, returning nodes which do not share a
+prefix with the argument but which meet the specified color mask
+and/or match function constraints.
+.Pp
+Finally, the function
+.Fn rttree_getnext_v
+searches for a node in a volatile tree
+.Fa rr
+with a key which is the nearest lexically
+larger than the key pointed to by
+.Fa kp
+of length
+.Fa k_len .
+If the
+.Fa ret_match
+parameter is
+.Fa true
+a node with a key which is an exact match for the argument key and key
+length will be returned if one is present, otherwise a node with a lexically
+larger key will be returned exclusively.  The node returned will be the
+same node that would be returned by a call to
+.Fn rttree_next_v
+if a node with the key described by
+.Fa kp
+and
+.Fa k_len
+were present in the tree and given to the latter function as a parameter.  The
+function
+.Fn rttree_getprev_v
+performs the same operation but travels in the opposite direction.  The
+functions
+.Fn rttree_getnext_c_v ,
+.Fn rttree_getnext_x_v ,
+.Fn rttree_getnext_cx_v ,
+.Fn rttree_getprev_c_v ,
+.Fn rttree_getprev_x_v
+and
+.Fn rttree_getprev_cx_v
+do the analgous functions returning nodes constrained by color masks
+and or a match function.  Note that these latter functions will return a
+node with the same key as
+.Fa kp
+and
+.Fa k_len
+if the
+.Fa ret_match
+argument is
+.Fa true
+but will not if it is
+.Fa false .
+.Sh RETURN VALUES
+All of the functions specifically of use in a volatile
+.Tn rttree
+are search and walk functions returning
+.Ft rtnode_t
+pointers.  These can seldom detect programming errors, but generally
+return a
+.Fa NULL
+value when they do.
+.Sh SEE ALSO
+.Xr rttree 3
